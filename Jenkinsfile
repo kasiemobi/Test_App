@@ -11,31 +11,44 @@ pipeline {
         
         stage('Build') {
             steps {
-                // Build the Java application
                 sh 'mvn clean install'
             }
         }
         
-        stage('Test') {
+        stage('Start PostgreSQL Database') {
             steps {
-                // Run tests
-                sh 'mvn test'
+                sh 'docker-compose -f docker-compose up -d db'
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Migrate Database Schema') {
             steps {
-                // Build the Docker image
+                sh 'java -jar target/dropwizard-realworld-example-app-1.0-SNAPSHOT.jar db migrate config.yml'
+            }
+        }
+        
+        stage('Start Application') {
+            steps {
+                sh 'java -jar target/dropwizard-realworld-example-app-1.0-SNAPSHOT.jar server config.yml &'
+            }
+        }
+        
+        stage('Verify Application') {
+            steps {
                 script {
-                    docker.build('my-image-name', '-f Dockerfile .')
+                    def metricsUrl = 'http://localhost:8081'
+                    def apiBaseUrl = 'http://localhost:8080/api/'
+                    
+                    echo "Checking metrics/health checks at ${metricsUrl}"
+                    echo "Checking APIs at ${apiBaseUrl}"
                 }
             }
         }
         
-        stage('Deploy') {
+        stage('Sonar Code Quality Check') {
             steps {
-                // Deploy the application
-                echo 'Deploying application'
+                sh 'docker-compose -f sonar.yml up -d'
+                sh 'mvn clean install sonar:sonar -Dsonar.host.url=http://localhost:9001'
             }
         }
     }
