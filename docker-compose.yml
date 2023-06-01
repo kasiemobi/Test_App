@@ -16,8 +16,6 @@ services:
   db:
     image: postgres:14.4
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
       - DOCKER_USER=$USER
       - DOCKER_GROUP=$(id -g $USER)
     ports:
