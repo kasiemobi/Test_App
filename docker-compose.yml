@@ -1,4 +1,5 @@
 version: "3.7"
+
 services:
   realworld:
     build: .
@@ -17,5 +18,7 @@ services:
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
+      - DOCKER_USER=$USER
+      - DOCKER_GROUP=$(id -g $USER)
     ports:
       - 5432:5432
