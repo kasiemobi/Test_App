@@ -11,6 +11,8 @@ services:
       - 8081:8081
     depends_on:
       - db
+    volumes:
+      - .:/app  # Bind mount the current directory to /app inside the container
 
   db:
     image: postgres:14.4
